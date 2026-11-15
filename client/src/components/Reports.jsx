@@ -76,9 +76,11 @@ function ReportCard({ title, report }) {
                   <p>
                     <strong>Date:</strong> {reading.reading_date}
                   </p>
+
                   <p>
                     <strong>Slot:</strong> {reading.slot}
                   </p>
+
                   <p>
                     <strong>Glucose:</strong> {reading.glucose_value} mg/dL
                   </p>
@@ -116,7 +118,11 @@ function Reports() {
 
   const daysInMonth =
     selectedYear && selectedMonth
-      ? new Date(Number(selectedYear), Number(selectedMonth), 0).getDate()
+      ? new Date(
+          Number(selectedYear),
+          Number(selectedMonth),
+          0
+        ).getDate()
       : 0;
 
   const maxDay =
@@ -131,11 +137,10 @@ function Reports() {
       : "";
 
   const fetchReports = async (date) => {
+    if (!date) return;
+
     setLoading(true);
     setMessage("");
-    setDailyReport(null);
-    setMonthReport(null);
-    setPreviousReport(null);
 
     try {
       const [daily, month, previous] = await Promise.all([
@@ -157,6 +162,11 @@ function Reports() {
   useEffect(() => {
     if (selectedDate) {
       fetchReports(selectedDate);
+    } else {
+      setDailyReport(null);
+      setMonthReport(null);
+      setPreviousReport(null);
+      setMessage("");
     }
   }, [selectedDate]);
 
@@ -171,16 +181,38 @@ function Reports() {
     setSelectedDay("");
   };
 
+  const handleRefresh = () => {
+    if (selectedDate && !loading) {
+      fetchReports(selectedDate);
+    }
+  };
+
   return (
     <section className="reports-section">
-      <h2>Glucose Reports</h2>
+
+      <div className="reports-header">
+        <h2>Glucose Reports</h2>
+
+        <button
+          type="button"
+          className="refresh-button"
+          onClick={handleRefresh}
+          disabled={!selectedDate || loading}
+        >
+          {loading ? "Refreshing..." : "↻ Refresh"}
+        </button>
+      </div>
 
       <div className="report-date-filter">
         <label>Select Report Date</label>
 
         <div className="report-date-selectors">
-          <select value={selectedYear} onChange={handleYearChange}>
+          <select
+            value={selectedYear}
+            onChange={handleYearChange}
+          >
             <option value="">Select Year</option>
+
             {years.map((year) => (
               <option key={year} value={year}>
                 {year}
@@ -194,6 +226,7 @@ function Reports() {
             disabled={!selectedYear}
           >
             <option value="">Select Month</option>
+
             {months.map((month, index) => {
               const monthNumber = String(index + 1).padStart(2, "0");
 
@@ -219,6 +252,7 @@ function Reports() {
             disabled={!selectedYear || !selectedMonth}
           >
             <option value="">Select Date</option>
+
             {Array.from({ length: maxDay }, (_, index) => {
               const day = String(index + 1).padStart(2, "0");
 
@@ -233,20 +267,36 @@ function Reports() {
       </div>
 
       {!selectedDate && (
-        <p>Please select a year, month, and date to view glucose reports.</p>
+        <p>
+          Please select a year, month, and date to view glucose reports.
+        </p>
       )}
 
       {loading && <p>Loading reports...</p>}
 
-      {message && <p className="report-message">{message}</p>}
+      {message && (
+        <p className="report-message">{message}</p>
+      )}
 
       {!loading && !message && selectedDate && (
         <div className="reports-grid">
-          <ReportCard title="Daily Report" report={dailyReport} />
-          <ReportCard title="Month-to-Date Report" report={monthReport} />
-          <ReportCard title="Previous Month Report" report={previousReport} />
+          <ReportCard
+            title="Daily Report"
+            report={dailyReport}
+          />
+
+          <ReportCard
+            title="Month-to-Date Report"
+            report={monthReport}
+          />
+
+          <ReportCard
+            title="Previous Month Report"
+            report={previousReport}
+          />
         </div>
       )}
+
     </section>
   );
 }

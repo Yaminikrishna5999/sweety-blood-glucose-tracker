@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { loginUser, registerUser } from "./services/authService";
 import Dashboard from "./components/Dashboard";
 
@@ -8,6 +10,7 @@ function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +32,7 @@ function App() {
         setMessage("Account created successfully. Please log in.");
         setIsLogin(true);
         setPassword("");
+        setShowPassword(false);
       }
     } catch (error) {
       setMessage(error.message);
@@ -94,14 +98,31 @@ function App() {
 
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
+
+              <div className="password-input-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button
@@ -126,6 +147,8 @@ function App() {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setMessage("");
+                setPassword("");
+                setShowPassword(false);
               }}
             >
               {isLogin ? "Sign Up" : "Login"}
